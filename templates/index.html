@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WasteLife</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            background: #E9EFC0;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header h1, header h3 {
+            text-align: center;
+            color: #218823;
+        }
+
+        header h1 {
+            margin-top: 40px;
+        }
+
+        header h3 {
+            margin-top: -10px;
+            margin-bottom: 40px;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .container {
+            background: #fefff3;
+            margin: 0 50px 40px;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .container h2 {
+            margin-top: 0;
+        }
+
+        .container p {
+            font-size: 15px;
+        }
+
+        button {
+            padding: 10px 16px;
+            background-color: #4E944F;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: "Poppins", sans-serif;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        input[type="file"] {
+            font-family: "Poppins", sans-serif;
+        }
+
+        #camera {
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            width: 50%;
+            display: none;
+        }
+
+        .output-image {
+            max-width: 100%;
+            max-height: 300px;
+            border: 4px solid #5fca5f;
+            border-radius: 12px;
+            box-shadow: 0 0 20px #228b22;
+            margin-top: 10px;
+        }
+
+        .hasil {
+            border-top: 1px solid #505050;
+            margin-top: 30px;
+            padding-top: 30px;
+        }
+
+        .output-type {
+            font-size: 15px;
+            margin: 10px 0;
+        }
+
+        .trash-info {
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        .trash-image {
+            margin-top: 15px;
+            max-width: 200px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            padding: 10px;
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Aplikasi Pemilah Sampah</h1>
+        <h3>Deteksi jenis sampahmu dengan WasteLife</h3>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="input">
+                <h2>Tambahkan Gambar Sampah</h2>
+                <p>Unggah gambar untuk mengetahui jenis sampahmu</p>
+                <form action="/predict" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" accept="image/*" required>
+                    <button type="submit">Upload Gambar</button>
+                </form>
+                <p>Atau</p>
+                <button id="toggleCameraBtn" style="margin-bottom: 20px;">Nyalakan Kamera</button>
+                <video id="camera" autoplay playsinline></video>
+                <br>
+                <button id="snapBtn" style="display:none; margin-right: 20px; margin-left: 120px;">Ambil Gambar</button>
+                <button id="stopBtn" style="display:none">Matikan Kamera</button>
+            </div>
+
+            <div class="hasil">
+                <h2>Hasil</h2>
+                <div class="output-type">
+                    Jenis Sampah:
+                    {% if prediction %}
+                    <strong>{{ prediction }}</strong>
+                    {% else %}
+                    -
+                    {% endif %}
+                </div>
+                {% if image_url %}
+                <img class="output-image" src="{{ image_url }}">
+                {% endif %}
+            </div>
+
+            <div class="rekomendasi">
+                <h3>Rekomendasi</h3>
+                <div class="trash-info">
+                    {% if prediction %}
+                        {% if prediction == 'organik' %}
+                        Sampah ini sebaiknya dibuang ke tong organik.
+                        <img src="{{ url_for('static', filename='organik.jpg') }}" class="trash-image">
+                        {% elif prediction == 'anorganik' %}
+                        Sampah ini sebaiknya dibuang ke tong anorganik.
+                        <img src="{{ url_for('static', filename='anorganik.jpg') }}" class="trash-image">
+                        {% elif prediction == 'b3' %}
+                        Sampah ini sebaiknya dibuang ke tempat B3 (berbahaya dan beracun).
+                        <img src="{{ url_for('static', filename='b3.jpg') }}" class="trash-image">
+                        {% elif prediction == 'daur_ulang' %}
+                        Sampah ini masih layak untuk didaur ulang. Gunakan sebagai bahan kerajinan atau donasikan ke bank sampah.
+                        {% else %}
+                        Sampah tidak dikenali, silakan unggah ulang.
+                        {% endif %}
+                    {% else %}
+                        Harap unggah gambar terlebih dahulu.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <canvas id="canvas" style="display: none;"></canvas>
+        <form id="cameraForm" action="/predict" method="POST" enctype="multipart/form-data" style="display: none;">
+            <input type="file" name="file" id="imageFromCam" accept="image/*">
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 WasteLife. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const camera = document.getElementById('camera');
+        const toggleBtn = document.getElementById('toggleCameraBtn');
+        const snapBtn = document.getElementById('snapBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const imageInput = document.getElementById('imageFromCam');
+        const form = document.getElementById('cameraForm');
+        const canvas = document.getElementById('canvas');
+
+        let stream = null;
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            camera.style.display = 'none';
+            snapBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+                stream = s;
+                camera.srcObject = s;
+                camera.style.display = 'block';
+                snapBtn.style.display = 'inline-block';
+                stopBtn.style.display = 'inline-block';
+            }).catch(err => {
+                alert("Gagal mengakses kamera. Pastikan izin telah diberikan.");
+            });
+        });
+
+        stopBtn.addEventListener('click', stopCamera);
+
+        snapBtn.addEventListener('click', () => {
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            canvas.getContext('2d').drawImage(camera, 0, 0);
+
+            canvas.toBlob(blob => {
+                const file = new File([blob], "camera.jpg", { type: "image/jpeg" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                imageInput.files = dt.files;
+                form.submit();
+            }, 'image/jpeg');
+        });
+    </script>
+
+    <script>
+        const jenis = "{{ prediction|default('')|lower }}";
+        let pesan = "";
+
+        if (jenis === "anorganik") {
+            pesan = "Jenis sampah anorganik.";
+        } else if (jenis === "organik") {
+            pesan = "Jenis sampah organik.";
+        } else if (jenis === "b3") {
+            pesan = "Jenis sampah B tiga atau bahan berbahaya dan beracun.";
+        } else if (jenis === "daur_ulang") {
+            pesan = "Sampah dapat didaur ulang, manfaatkan kembali untuk lingkungan.";
+        } else if (jenis) {
+            pesan = "Jenis sampah tidak dikenali.";
+        }
+
+        if (pesan) {
+            const utter = new SpeechSynthesisUtterance(pesan);
+            utter.lang = 'id-ID';
+            window.speechSynthesis.speak(utter);
+        }
+    </script>
+
+</body>
+
+</html>

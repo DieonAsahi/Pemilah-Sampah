@@ -1,0 +1,20 @@
+Confusion Matrix (Fine-Tuning):
+[[ 94  14  10  10]
+ [ 40 118  16  12]
+ [ 30  16  79   5]
+ [ 37  19   8  67]]
+
+Classification Report (Fine-Tuning):
+              precision    recall  f1-score   support
+
+   anorganik       0.47      0.73      0.57       128
+          b3       0.71      0.63      0.67       186
+  daur_ulang       0.70      0.61      0.65       130
+     organik       0.71      0.51      0.60       131
+
+    accuracy                           0.62       575
+   macro avg       0.65      0.62      0.62       575
+weighted avg       0.65      0.62      0.63       575
+
+
+Akurasi Setelah Fine-Tuning: 0.6226

@@ -1,0 +1,20 @@
+Confusion Matrix:
+[[ 70  22  16  20]
+ [ 24 124  24  14]
+ [ 18  23  78  11]
+ [ 28  19  12  72]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+   anorganik       0.50      0.55      0.52       128
+          b3       0.66      0.67      0.66       186
+  daur_ulang       0.60      0.60      0.60       130
+     organik       0.62      0.55      0.58       131
+
+    accuracy                           0.60       575
+   macro avg       0.59      0.59      0.59       575
+weighted avg       0.60      0.60      0.60       575
+
+
+Akurasi: 0.5983

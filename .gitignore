@@ -1,0 +1,13 @@
+# Jangan commit virtual environment
+venv/
+
+# Jangan commit file Python cache
+__pycache__/
+*.pyc
+
+# File environment / config lokal
+.env
+
+# Jangan commit file dari sistem
+.DS_Store
+Thumbs.db
