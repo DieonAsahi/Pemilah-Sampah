@@ -2,7 +2,3 @@ flask
 tensorflow
 pillow
 python-dotenv
-
-python -m venv venv
-venv\Scripts\activate  # di Windows
-pip install -r requirements.txt
